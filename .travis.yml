@@ -11,9 +11,11 @@ jobs:
     - name: debian-buster
       before_install:
       - docker image pull debian:buster
-    - name: debian-jessie
-      before_install:
-      - docker image pull debian:jessie
+      - docker run --name test -it debian:buster
+      - docker copy . .
+    # - name: debian-jessie
+    #   before_install:
+    #   - docker image pull debian:jessie
 after_success:
   - coveralls
 addons:
