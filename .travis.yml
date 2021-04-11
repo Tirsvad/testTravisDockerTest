@@ -13,6 +13,8 @@ jobs:
       - docker image pull debian:buster
       - docker run --name test -it debian:buster
       - docker copy . .
+      script:
+      - docker run test bash -c "sudo -E env 'PATH=$PATH' pytest --cov=./src"
     # - name: debian-jessie
     #   before_install:
     #   - docker image pull debian:jessie
