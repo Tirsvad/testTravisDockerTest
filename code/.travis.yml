@@ -1,0 +1,27 @@
+language: python
+
+services:
+  - docker
+
+notifications:
+  webhooks: https://coveralls.io/webhook
+
+jobs:
+  include:
+    - name: debian-buster
+      before_install:
+      - docker image pull debian:buster
+      - docker run --name test -it debian:buster
+      - docker copy . .
+      script:
+      - docker run test bash -c "sudo -E env 'PATH=$PATH' pytest --cov=./src"
+    # - name: debian-jessie
+    #   before_install:
+    #   - docker image pull debian:jessie
+after_success:
+  - coveralls
+addons:
+  apt:
+    packages:
+      - curl
+      - docker-ce

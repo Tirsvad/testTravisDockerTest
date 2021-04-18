@@ -10,6 +10,3 @@ class Test():
 
     def test_noget(self):
         pass
-
-    def test_noget_andet(self):
-        pass

@@ -1,5 +1,7 @@
 language: python
 
+sudo: required
+
 services:
   - docker
 
@@ -8,17 +10,34 @@ notifications:
 
 jobs:
   include:
-    - name: debian-buster
-      before_install:
-      - docker image pull debian:buster
-      - docker run --name test -it debian:buster
-      - docker copy . .
-      script:
-      - docker run test bash -c "sudo -E env 'PATH=$PATH' pytest --cov=./src"
-    # - name: debian-jessie
+      - stage: test
+        name: debian-buster
+        before_install:
+          - sudo apt-get update
+        install:
+          - docker pull debian:buster
+          - docker run -t -d --rm --privileged --name test_debian10 debian:buster /bin/bash
+          - docker ps -a
+          - docker exec test_debian10 bash -c "mkdir /code"
+          - docker exec test_debian10 bash -c "apt-get -qq update"
+          - docker exec test_debian10 bash -c "apt-get -qq install curl"
+          - docker exec test_debian10 bash -c "apt-get -qq install virtualenv"
+          - docker exec --workdir /code -i test_debian10 bash -c "curl -L https://github.com/Tirsvad/testTravisDockerTest/tarball/main | tar -xz --strip-components 1"
+          - docker exec --workdir /code -i test_debian10 bash -c "virtualenv .env"
+          - docker exec --workdir /code -i test_debian10 bash -c "virtualenv --python=python3 .env"
+          - docker exec --workdir /code -i test_debian10 bash -c "pip3 install .[test]"
+          - docker exec test_debian10 ls -la
+
+        script:
+          - docker exec test_debian10 bash -c "cd /code && coverage run -m pytest"
+        after_success:
+          - coveralls
+       # - name: debian-jessie
     #   before_install:
     #   - docker image pull debian:jessie
+    - name: centos
 after_success:
+  - coverage combine --append
   - coveralls
 addons:
   apt:
